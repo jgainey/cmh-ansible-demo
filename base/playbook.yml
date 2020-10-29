@@ -1,0 +1,16 @@
+---
+- name: use cmh-demo/ansible-role-apache
+  hosts: css-demowp1-d2.cookgroup.nao
+  user: ansible
+  become: true
+
+  roles:
+    - role: cmh-demo/ansible-role-apache
+      apache_vhosts:
+        - servername: css-demowp1-d2.cookgroup.nao
+          serveraliases: []
+          documentroot: /var/www/css-demowp1-d2.cookgroup.nao/html
+          owner: apache
+          group: apache
+          allow_override: "All"
+          ssl_required: true

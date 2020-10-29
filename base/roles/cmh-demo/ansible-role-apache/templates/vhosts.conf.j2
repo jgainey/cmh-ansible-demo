@@ -1,0 +1,38 @@
+# Apache Vhost Configuration
+#
+# {{ ansible_managed }}
+
+    <VirtualHost *:80>
+            ServerName {{ servername }}
+            DocumentRoot /var/www/html
+            ErrorLog logs/error_log
+            CustomLog logs/access_log combined
+
+            RewriteEngine On
+            RewriteCond %{HTTPS} off
+            RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+
+    </VirtualHost>
+
+    <VirtualHost *:443>
+        ServerName {{ servername }}
+        DocumentRoot /var/www/{{ servername }}/html
+        ErrorLog logs/{{ servername }}-error_log
+        CustomLog logs/{{ servername }}-access_log combined
+
+            <Directory /var/www/{{ servername }}/html >
+                    Options -Indexes +FollowSymLinks
+                    AllowOverride All
+
+            </Directory>
+
+
+        SSLEngine on
+        SSLProtocol all -SSLv2 -SSLv3
+        SSLCipherSuite kEECDH:+kEECDH+SHA:kEDH:+kEDH+SHA:+kEDH+CAMELLIA:kECDH:+kECDH+SHA:kRSA:+kRSA+SHA:+kRSA+CAMELLIA:!aNULL:!eNULL:!SSLv2:!RC4:!DES:!EXP:!SEED:!IDEA:!3DES
+
+        SSLCertificateFile /etc/pki/tls/certs/{{ servername }}.crt
+        SSLCertificateKeyFile /etc/pki/tls/private/{{ servername }}.key
+
+    </VirtualHost>
+

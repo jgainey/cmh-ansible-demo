@@ -1,0 +1,10 @@
+---
+
+# file: {{ name }}/tasks/main.yml
+
+- name: Wordpress | Install apache
+  package:
+    name: 
+    - httpd
+  
+

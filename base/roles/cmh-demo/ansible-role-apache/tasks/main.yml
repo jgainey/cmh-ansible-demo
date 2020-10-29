@@ -1,0 +1,41 @@
+---
+# define variables for this role
+- name: Apache2 | OS-specific variables
+  include_vars: "{{ ansible_distribution }}.yml"
+
+# define apache_packages from __packages if not defined
+- name: Apache2 | Define package list
+  set_fact:
+    apache_packages: "{{ __packages | list }}"
+  when: apache_packages is not defined
+
+# install task
+- name: Apache2 | Install Apache2 Packages
+  package:
+    name: "{{ apache_packages }}"
+    state: present
+
+# install the base httpd.conf from template
+- name: Apache2 | Install Main Apache Configuration
+  template:
+    src: "{{ apache_conf_template }}"
+    dest: "{{ apache_server_root }}/conf/httpd.conf"
+    owner: root
+    group: root
+    mode: 0655
+
+# install the vhost.conf for the site and the self signed certificate
+- name: Apache2 | Install Sites
+  include_tasks: install-vhosts.yml
+  with_items: "{{ apache_vhosts }}"
+
+- name: Apache2 | Ensure service is started
+  service: 
+    name: httpd
+    state: started
+  register: apache_service_started
+
+- name: Apache2 | Ensure service is enabled
+  service: 
+    name: httpd
+    enabled: yes

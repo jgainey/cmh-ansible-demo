@@ -1,0 +1,37 @@
+    <VirtualHost *:80>
+            ServerName cookanimalhealth-dev.cookgroup.nao
+                     ServerAlias css-anmlhlt1-d1.cookgroup.nao
+            DocumentRoot /var/www/html
+            ErrorLog logs/error_log
+            CustomLog logs/access_log combined
+
+            RewriteEngine On
+            RewriteCond %{HTTPS} off
+            RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+
+    </VirtualHost>
+
+    <VirtualHost *:443>
+        ServerName cookanimalhealth-dev.cookgroup.nao
+                     ServerAlias css-anmlhlt1-d1.cookgroup.nao
+        DocumentRoot /var/www/cookanimalhealth-dev.cookgroup.nao/html
+        ErrorLog logs/cookanimalhealth-dev.cookgroup.nao-error_log
+        CustomLog logs/cookanimalhealth-dev.cookgroup.nao-access_log combined
+
+            <Directory /var/www/cookanimalhealth-dev.cookgroup.nao/html >
+                    Options -Indexes FollowSymLinks
+                    AllowOverride All
+
+            </Directory>
+
+
+        SSLEngine on
+           SSLProtocol all -SSLv2 -SSLv3
+           SSLCipherSuite kEECDH:+kEECDH+SHA:kEDH:+kEDH+SHA:+kEDH+CAMELLIA:kECDH:+kECDH+SHA:kRSA:+kRSA+SHA:+kRSA+CAMELLIA:!aNULL:!eNULL:!SSLv2:!RC4:!DES:!EXP:!SEED:!IDEA:!3DES
+
+        SSLCertificateFile /etc/pki/tls/certs/css-anmlhlt1-d1.cookgroup.nao.crt
+        SSLCertificateKeyFile /etc/pki/tls/private/css-anmlhlt1-d1.cookgroup.nao.key
+            SSLCACertificateFile /etc/pki/tls/certs/STAR_cookgroup_nao.ca-bundle
+
+    </VirtualHost>
+

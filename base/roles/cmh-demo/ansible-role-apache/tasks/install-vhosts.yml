@@ -1,0 +1,77 @@
+# create a standard vhost configuration
+- name: "Apache2 | Check for {{ tls_root }}/csr"
+  stat:
+    path: "{{ tls_root }}"
+  register: tls_root_csr_path
+  
+- name: "Apache2 | Create {{ tls_root }}/csr if not exists"
+  file:
+    path: "{{ tls_root }}/csr"
+    state: directory
+  when: not tls_root_csr_path.stat.exists
+  
+- name: Apache2 | Create certificate for {{ item.servername }}
+  debug:
+    msg: "{{ item.servername }}"
+  
+- name: Apache2 | Check for Document Root {{ item.documentroot }}
+  stat:
+    path: "{{ item.documentroot }}"
+  register: document_root
+
+- name: Apache2 | Create Document Root {{ item.documentroot }}
+  file:
+    path: "{{ item.documentroot }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: 0755
+    state: directory
+  when: not document_root.stat.exists
+
+- name: Apache2 | Check if /etc/ssl/csr exists
+  stat:
+    path: /etc/ssl/csr
+  register: openssl_csr_dir
+
+- name: Apache2 | Create /etc/ssl/csr if not exists
+  file:
+    path: /etc/ssl/csr
+    state: directory
+  when: not openssl_csr_dir.stat.exists
+
+- name: Apache2 | Check if {{ tls_root }}/certs/{{ item.servername }}.crt exists
+  stat:
+    path: "{{ tls_root }}/certs/{{ item.servername }}.crt"
+  register: vhost_cert
+
+- block:
+    - name: Apache2 | openssl_privateky generate private key
+      openssl_privatekey:
+        path: "{{ tls_root }}/private/{{ item.servername }}.key"
+    - name: Apache2 | openssl_csr generate a csr
+      openssl_csr:
+        path: "/etc/ssl/csr/{{ item.servername }}.csr"
+        privatekey_path: "{{ tls_root }}/private/{{ item.servername }}.key"
+        common_name: "{{ item.servername }}"
+    - name: Apache2 | openssl_certificate generate self signed certificate
+      openssl_certificate:
+        path: "{{ tls_root }}/certs/{{ item.servername }}.crt"
+        privatekey_path: "{{ tls_root }}/private/{{ item.servername }}.key"
+        csr_path: "/etc/ssl/csr/{{ item.servername }}.csr"
+        provider: selfsigned
+  when: not vhost_cert.stat.exists
+
+
+
+- name: Apache2 | Create vhost.conf for {{ item.servername }}
+  template:
+    src: "{{ apache_vhost_template }}"
+    dest: "{{ apache_conf_path }}/{{ item.servername }}.conf"
+    owner: root
+    group: root
+    mode: 0644
+  vars:
+    servername: "{{ item.servername }}"
+  when: apache_create_vhosts | bool
+  notify: restart apache
+
