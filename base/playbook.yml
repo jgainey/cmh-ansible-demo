@@ -3,14 +3,53 @@
   hosts: css-demowp1-d2.cookgroup.nao
   user: ansible
   become: true
+  vars:
+    hostName: "demo-site"
+
+
 
   roles:
     - role: cmh-demo/ansible-role-apache
       apache_vhosts:
-        - servername: css-demowp1-d2.cookgroup.nao
+        - servername: "{{ hostName }}"
           serveraliases: []
-          documentroot: /var/www/css-demowp1-d2.cookgroup.nao/html
+          documentroot: "/var/www/{{ hostName }}/html"
           owner: apache
           group: apache
           allow_override: "All"
           ssl_required: true
+
+  tasks:
+  - name: Set Tmp Deployment Dir
+    set_fact:
+      tmp_repo_dir: "/tmp/apache/.ansible/{{ hostName }}/html"
+
+  - name: remove any git repo
+    file:
+      path: "{{ tmp_repo_dir }}"
+      state: absent
+
+
+  - name: Git Clone Website
+    command: git clone  https://github.com/cloudacademy/static-website-example.git "{{ tmp_repo_dir }}"
+    become: true
+    become_method: sudo
+    become_user: apache
+    become_flags: 'HOME=/tmp/apache'
+
+  - name: Git Create Website Archive
+    command: cd "{{ tmp_repo_dir }}" && git archive --output="/tmp/apache/.ansible/build.tar" HEAD
+    become: true
+    become_method: sudo
+    become_user: apache
+    become_flags: 'HOME=/tmp/apache'
+
+  - name: Unarchive Website
+    become: true
+    become_method: sudo
+    become_user: apache
+    become_flags: 'HOME=/tmp/apache'
+    unarchive:
+      src: "/tmp/apache/.ansible/build.tar"
+      dest: "/var/www/{{ hostName }}/html"
+      remote_src: yes

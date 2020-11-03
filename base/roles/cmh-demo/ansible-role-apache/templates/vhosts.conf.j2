@@ -28,8 +28,8 @@
 
 
         SSLEngine on
-        SSLProtocol all -SSLv2 -SSLv3
-        SSLCipherSuite kEECDH:+kEECDH+SHA:kEDH:+kEDH+SHA:+kEDH+CAMELLIA:kECDH:+kECDH+SHA:kRSA:+kRSA+SHA:+kRSA+CAMELLIA:!aNULL:!eNULL:!SSLv2:!RC4:!DES:!EXP:!SEED:!IDEA:!3DES
+        SSLProtocol {{ apache_ssl_protocol }}
+        SSLCipherSuite {{ apache_ssl_cipher_suite }}
 
         SSLCertificateFile /etc/pki/tls/certs/{{ servername }}.crt
         SSLCertificateKeyFile /etc/pki/tls/private/{{ servername }}.key
