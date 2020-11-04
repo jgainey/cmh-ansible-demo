@@ -2,5 +2,5 @@
 - name: restart apache
   service:
     name: httpd
-    state: started
+    state: restarted
   when: apache_service_started.changed == False
