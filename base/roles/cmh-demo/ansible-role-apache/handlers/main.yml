@@ -4,3 +4,8 @@
     name: httpd
     state: restarted
   when: apache_service_started.changed == False
+
+- name: start apache
+  service:
+    name: httpd
+    state: started

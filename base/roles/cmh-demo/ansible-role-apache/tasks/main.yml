@@ -8,6 +8,8 @@
   set_fact:
     apache_packages: "{{ __packages | list }}"
   when: apache_packages is not defined
+  notify:
+    - start apache
 
 # install task
 - name: Apache2 | Install Apache2 Packages
